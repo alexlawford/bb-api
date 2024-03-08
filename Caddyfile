@@ -1,3 +1,7 @@
-http://185.62.108.226 {
-    respond "Hello!"
+:2015 {
+    respond "Hello, 2015"
+}
+
+:80 {
+    respond "Hello, 80"
 }
