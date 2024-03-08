@@ -1,4 +1,3 @@
 http://115.73.104.30 {
-    respond "Hello!"
-    tls internal
+    reverse_proxy localhost:8000
 }
