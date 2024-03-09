@@ -8,3 +8,4 @@ pillow
 requests
 torch
 safetensors
+xformers
