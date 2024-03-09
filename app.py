@@ -3,7 +3,8 @@ from flask_restful import Resource, Api
 import requests
 from PIL import Image
 from io import BytesIO
-from diffusers import DiffusionPipeline
+import base64
+from diffusers import StableDiffusionImg2ImgPipeline
 
 def saveBytescale (data):
     headers = {
@@ -16,14 +17,25 @@ app = Flask(__name__)
 api = Api(app)
 
 def generateImage (prompt):
-    pipeline = DiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5", use_safetensors=True)
+    pipeline = StableDiffusionImg2ImgPipeline.from_pretrained("runwayml/stable-diffusion-v1-5", use_safetensors=True)
     pipeline.to("cuda")
     return pipeline(prompt).images[0]
+
+def decode_base64_image(image_string):
+    image_string = image_string[len("data:image/png;base64,"):]
+    base64_image = base64.b64decode(image_string)
+    buffer = BytesIO(base64_image)
+    image = Image.open(buffer)
+    rgb = image.convert('RGB')
+    return rgb
 
 class Predict(Resource):
     def post(self):
         req = request.json
-        prediction = generateImage(req.get('prompt'))
+        prediction = generateImage(
+            prompt=req.get('prompt'),
+            image=decode_base64_image(req.get('img'))
+        )
         with BytesIO() as image_binary:
             prediction.save(image_binary, "png")
             image_binary.seek(0)
