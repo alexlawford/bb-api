@@ -16,10 +16,10 @@ def saveBytescale (data):
 app = Flask(__name__)
 api = Api(app)
 
-def generateImage (prompt):
+def generateImage (prompt, image):
     pipeline = StableDiffusionImg2ImgPipeline.from_pretrained("runwayml/stable-diffusion-v1-5", use_safetensors=True)
     pipeline.to("cuda")
-    return pipeline(prompt).images[0]
+    return pipeline(prompt=prompt, image=image).images[0]
 
 def decode_base64_image(image_string):
     image_string = image_string[len("data:image/png;base64,"):]
