@@ -4,7 +4,7 @@ import requests
 from PIL import Image
 from io import BytesIO
 import base64
-from diffusers import AutoPipelineForText2Image, StableDiffusionXLControlNetInpaintPipeline, ControlNetModel
+from diffusers import AutoPipelineForText2Image, AutoPipelineForInpainting, ControlNetModel
 import torch
 import os
 
@@ -35,7 +35,7 @@ def load_models():
 
     # Control Nets
     openpose = ControlNetModel.from_pretrained(
-        "TencentARC/t2i-adapter-openpose-sdxl-1.0",
+        "thibaud/controlnet-openpose-sdxl-1.0",
         torch_dtype=torch.float16
     )
 
@@ -47,7 +47,7 @@ def load_models():
    #    local_files_only=True
     ).to("cuda")
 
-    inpainting = StableDiffusionXLControlNetInpaintPipeline.from_pretrained(
+    inpainting = AutoPipelineForInpainting.from_pretrained(
         "stabilityai/stable-diffusion-xl-refiner-1.0",
         torch_dtype=torch.float16,
         use_safetensors=True,
