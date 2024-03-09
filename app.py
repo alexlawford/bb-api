@@ -43,28 +43,33 @@ def load_models():
     text2image = StableDiffusionPipeline.from_pretrained(
         "runwayml/stable-diffusion-v1-5",
         torch_dtype=torch.float16,
+        safety_checker = None
     ).to("cuda")
 
     inpaintScribble = StableDiffusionControlNetInpaintPipeline.from_pretrained(
         "runwayml/stable-diffusion-inpainting",
         controlnet=scribble,
         torch_dtype=torch.float16,
+        safety_checker = None
     ).to("cuda")
 
     inpaintOpenpose = StableDiffusionControlNetInpaintPipeline.from_pretrained(
         "runwayml/stable-diffusion-inpainting",
         controlnet=openpose,
         torch_dtype=torch.float16,
+        safety_checker = None
     ).to("cuda")
 
     upscale = StableDiffusionLatentUpscalePipeline.from_pretrained(
         "stabilityai/sd-x2-latent-upscaler",
         torch_dtype=torch.float16,
+        safety_checker = None
     ).to("cuda")
 
     refine = AutoPipelineForImage2Image.from_pretrained(
         "stabilityai/stable-diffusion-xl-refiner-1.0",
         torch_dtype=torch.float16,
+        safety_checker = None
     ).to("cuda")
 
     # Memory attention
@@ -95,29 +100,40 @@ class Predict(Resource):
             prompt = layer["prompt"]
             full_prompt = full_prompt + ' ' + prompt
 
-            if layer["type"] == "background":
-                img = text2image(
-                    prompt=prompt,
-                    num_inference_steps=20
-                ).images[0]
-            elif layer["type"] == "figure":
-                img = inpaintOpenpose(
-                    prompt=prompt,
-                    image=img,
-                    mask_image=decode_base64_image(layer["mask"]),
-                    control_image=decode_base64_image(layer["control"]),
-                    num_inference_steps=20,
-                    controlnet_conditioning_scale=0.75
-                ).images[0]
-            else:
-                img = inpaintScribble(
-                    prompt=prompt,
-                    image=img,
-                    mask_image=decode_base64_image(layer["mask"]),
-                    control_image=decode_base64_image(layer["control"]),
-                    num_inference_steps=20,
-                    controlnet_conditioning_scale=0.75
-                )
+            print(full_prompt)
+
+            # if layer["type"] == "background":
+            #     img = text2image(
+            #         prompt=prompt,
+            #         num_inference_steps=20
+            #     ).images[0]
+            # elif layer["type"] == "figure":
+            #     img = inpaintOpenpose(
+            #         prompt=prompt,
+            #         image=img,
+            #         mask_image=decode_base64_image(layer["mask"]),
+            #         control_image=decode_base64_image(layer["control"]),
+            #         num_inference_steps=20,
+            #         controlnet_conditioning_scale=0.75
+            #     ).images[0]
+            # else:
+            #     img = inpaintScribble(
+            #         prompt=prompt,
+            #         image=img,
+            #         mask_image=decode_base64_image(layer["mask"]),
+            #         control_image=decode_base64_image(layer["control"]),
+            #         num_inference_steps=20,
+            #         controlnet_conditioning_scale=0.75
+            #     )
+
+        # TEMP
+            
+        img = text2image(
+            prompt=full_prompt,
+            num_inference_steps=20
+        ).images[0]
+
+        # / TEMP
         
         upscaled = upscale(
             prompt=full_prompt,
