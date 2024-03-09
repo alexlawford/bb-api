@@ -4,7 +4,7 @@ import requests
 from PIL import Image
 from io import BytesIO
 import base64
-from diffusers import AutoPipelineForText2Image, AutoPipelineForInpainting
+from diffusers import AutoPipelineForText2Image, AutoPipelineForInpainting, ControlNetModel
 import torch
 import os
 
@@ -29,6 +29,16 @@ def decode_base64_image(image_string):
     return rgb
 
 def load_models():
+
+   # TencentARC/t2i-adapter-openpose-sdxl-1.0
+   # TencentARC/t2i-adapter-lineart-sdxl-1.0
+
+    # Control Nets
+    openpose = ControlNetModel.from_pretrained(
+        "TencentARC/t2i-adapter-openpose-sdxl-1.0",
+        torch_dtype=torch.float16
+    )
+
     # Pipelines
     text2image = AutoPipelineForText2Image.from_pretrained(
         "stabilityai/stable-diffusion-xl-base-1.0",
@@ -41,6 +51,7 @@ def load_models():
         "stabilityai/stable-diffusion-xl-refiner-1.0",
         torch_dtype=torch.float16,
         use_safetensors=True,
+        controlnet=openpose,
  #      local_files_only=True
     ).to("cuda")
 
@@ -58,22 +69,18 @@ class Predict(Resource):
         (text2image, inpainting) = load_models()
 
         background = text2image(
-            prompt="A jungle",
+            prompt="a jungle",
             num_inference_steps=30
         ).images[0]
         
         refined = inpainting(
-            prompt="a bear in the jungle",
+            prompt="an explorer in a jungle",
             image=background,
             num_inference_steps=30,
             mask_image=decode_base64_image(layers[1]["mask"]),
+            control_image=decode_base64_image(layers[1]["control"]),
             strength=0.99
         ).images[0]
-
-        with BytesIO() as image_binary:
-            background.save(image_binary, "png")
-            image_binary.seek(0)
-            result = saveBytescale(image_binary)
 
         with BytesIO() as image_binary:
             refined.save(image_binary, "png")
