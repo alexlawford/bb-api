@@ -7,7 +7,7 @@ from diffusers import DiffusionPipeline
 
 def saveBytescale (data):
     headers = {
-        'Authorization': 'Bearer public_12a1yrrGGApHW4eVGAfq3RnXk9uv',
+        'Authorization': 'Bearer *****',
         'Content-Type': 'image/png',
     }
     return requests.post('https://api.bytescale.com/v2/accounts/12a1yrr/uploads/binary', headers=headers, data=data)
