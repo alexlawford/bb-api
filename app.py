@@ -97,7 +97,7 @@ class Predict(Resource):
         for layer in layers:
             prompt = layer["prompt"]
             full_prompt = full_prompt + ' ' + prompt
-            prompt=prompt + ", Comistyle"
+            prompt=prompt + ", storyboard sketch"
 
             if layer["type"] == "background":
                 img = text2image(
