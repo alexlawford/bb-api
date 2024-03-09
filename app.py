@@ -34,10 +34,9 @@ def load_models():
     text2image = StableDiffusionXLPipeline.from_pretrained(
         "stabilityai/stable-diffusion-xl-base-1.0",
         torch_dtype=torch.float16,
-        use_safetensors=True
+        use_safetensors=True,
+        local_files_only=True
     ).to("cuda")
-
-    text2image.unet = torch.compile(text2image.unet, mode="reduce-overhead", fullgraph=True)
 
     return text2image
 
