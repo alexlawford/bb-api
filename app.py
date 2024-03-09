@@ -4,7 +4,7 @@ import requests
 from PIL import Image
 from io import BytesIO
 import base64
-from diffusers import AutoPipelineForText2Image, AutoPipelineForInpainting, ControlNetModel
+from diffusers import AutoPipelineForText2Image, StableDiffusionXLImg2ImgControlNetPipeline, ControlNetModel
 import torch
 import os
 
@@ -47,7 +47,7 @@ def load_models():
    #    local_files_only=True
     ).to("cuda")
 
-    inpainting = AutoPipelineForInpainting.from_pretrained(
+    inpainting = StableDiffusionXLImg2ImgControlNetPipeline.from_pretrained(
         "stabilityai/stable-diffusion-xl-refiner-1.0",
         torch_dtype=torch.float16,
         use_safetensors=True,
