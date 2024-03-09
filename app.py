@@ -4,7 +4,7 @@ import requests
 from PIL import Image
 from io import BytesIO
 import base64
-from diffusers import AutoPipelineForText2Image, AutoPipelineForInpainting
+from diffusers import StableDiffusionXLPipeline, AutoPipelineForInpainting
 import torch
 import os
 
@@ -30,7 +30,7 @@ def decode_base64_image(image_string):
 
 def load_models():
     # Pipelines
-    text2image = AutoPipelineForText2Image.from_pretrained(
+    text2image = StableDiffusionXLPipeline.from_pretrained(
         "stabilityai/stable-diffusion-xl-base-1.0",
         torch_dtype=torch.float16,
         use_safetensors=True,
