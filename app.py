@@ -96,50 +96,33 @@ class Predict(Resource):
         full_prompt = ""
         img = Image.new(mode="RGB", size=(512,512))
         
-        # for layer in layers:
-        #     prompt = layer["prompt"]
-        #     full_prompt = full_prompt + ' ' + prompt
+        for layer in layers:
+            prompt = layer["prompt"]
+            full_prompt = full_prompt + ' ' + prompt
 
-            # if layer["type"] == "background":
-            #     img = text2image(
-            #         prompt=prompt,
-            #         num_inference_steps=20
-            #     ).images[0]
-            # elif layer["type"] == "figure":
-            #     img = inpaintOpenpose(
-            #         prompt=prompt,
-            #         image=img,
-            #         mask_image=decode_base64_image(layer["mask"]),
-            #         control_image=decode_base64_image(layer["control"]),
-            #         num_inference_steps=20,
-            #         controlnet_conditioning_scale=0.75
-            #     ).images[0]
-            # else:
-            #     img = inpaintScribble(
-            #         prompt=prompt,
-            #         image=img,
-            #         mask_image=decode_base64_image(layer["mask"]),
-            #         control_image=decode_base64_image(layer["control"]),
-            #         num_inference_steps=20,
-            #         controlnet_conditioning_scale=0.75
-            #     )
-
-        # TEMP
-            
-        img = text2image(
-            prompt=full_prompt,
-            num_inference_steps=20
-        ).images[0]
-
-        img = inpaintOpenpose(
-            prompt=full_prompt,
-            image=img,
-            mask_image=decode_base64_image(layers[1]["mask"]),
-            control_image=decode_base64_image(layers[1]["control"]),
-            num_inference_steps=20,
-            controlnet_conditioning_scale=0.75          
-        )
-        # / TEMP
+            if layer["type"] == "background":
+                img = text2image(
+                    prompt=prompt,
+                    num_inference_steps=20
+                ).images[0]
+            elif layer["type"] == "figure":
+                img = inpaintOpenpose(
+                    prompt=prompt,
+                    image=img,
+                    mask_image=decode_base64_image(layer["mask"]),
+                    control_image=decode_base64_image(layer["control"]),
+                    num_inference_steps=20,
+                    controlnet_conditioning_scale=0.75
+                ).images[0]
+            else:
+                img = inpaintScribble(
+                    prompt=prompt,
+                    image=img,
+                    mask_image=decode_base64_image(layer["mask"]),
+                    control_image=decode_base64_image(layer["control"]),
+                    num_inference_steps=20,
+                    controlnet_conditioning_scale=0.75
+                ).images[0]
         
         upscaled = upscale(
             prompt=full_prompt,
