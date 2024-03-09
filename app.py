@@ -6,6 +6,8 @@ from io import BytesIO
 import base64
 from diffusers import StableDiffusionXLPipeline
 import torch
+import os
+
 
 def saveBytescale (data):
     headers = {
@@ -34,6 +36,8 @@ def load_models():
         torch_dtype=torch.float16,
         variant="fp16"
     ).to("cuda")
+
+    text2image.enable_xformers_memory_efficient_attention()
 
     return text2image
 
