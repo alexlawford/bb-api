@@ -8,6 +8,7 @@ from diffusers import StableDiffusionXLPipeline
 import torch
 import os
 
+torch.backends.cuda.matmul.allow_tf32 = True
 
 def saveBytescale (data):
     headers = {
@@ -28,8 +29,6 @@ def decode_base64_image(image_string):
     return rgb
 
 def load_models():
-    torch.backends.cuda.matmul.allow_tf32 = True
-
     # Pipelines
     text2image = StableDiffusionXLPipeline.from_pretrained(
         "stabilityai/stable-diffusion-xl-base-1.0",
@@ -37,6 +36,8 @@ def load_models():
         use_safetensors=True,
         local_files_only=True
     ).to("cuda")
+
+    text2image.enable_xformers_memory_efficient_attention()
 
     return text2image
 
