@@ -57,9 +57,9 @@ def load_models():
         torch_dtype=torch.float16
     ).to("cuda")
 
-    text2image.load_lora_weights(".", "weights/lora.safetensors")
-    inpaintScribble.load_lora_weights(".", weight_name="weights/lora.safetensors")
-    inpaintOpenpose.load_lora_weights(".", weight_name="weights/lora.safetensors")
+    text2image.unet.load_attn_procs("weights/lora.safetensors")
+    # inpaintScribble.load_lora_weights(".", weight_name="weights/lora.safetensors")
+    # inpaintOpenpose.load_lora_weights(".", weight_name="weights/lora.safetensors")
     
     # upscale = StableDiffusionLatentUpscalePipeline.from_pretrained(
     #     "stabilityai/sd-x2-latent-upscaler",
