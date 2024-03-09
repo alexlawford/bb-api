@@ -68,11 +68,11 @@ def load_models():
     ).to("cuda")
 
     # Memory attention
-    text2image.enable_xformers_memory_efficient_attention()
-    inpaintScribble.enable_xformers_memory_efficient_attention()
-    inpaintOpenpose.enable_xformers_memory_efficient_attention()
-    upscale.enable_xformers_memory_efficient_attention()
-    refine.enable_xformers_memory_efficient_attention()
+    # text2image.enable_xformers_memory_efficient_attention()
+    # inpaintScribble.enable_xformers_memory_efficient_attention()
+    # inpaintOpenpose.enable_xformers_memory_efficient_attention()
+    # upscale.enable_xformers_memory_efficient_attention()
+    # refine.enable_xformers_memory_efficient_attention()
 
     return (
         text2image,
