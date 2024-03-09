@@ -57,15 +57,19 @@ def load_models():
         torch_dtype=torch.float16
     ).to("cuda")
 
-    upscale = StableDiffusionLatentUpscalePipeline.from_pretrained(
-        "stabilityai/sd-x2-latent-upscaler",
-        torch_dtype=torch.float16
-    ).to("cuda")
+    text2image.load_lora_weights("weights/lora.safetensors", weight_name="pytorch_lora_weights.safetensors")
+    inpaintScribble.load_lora_weights("weights/lora.safetensors", weight_name="pytorch_lora_weights.safetensors")
+    inpaintOpenpose.load_lora_weights("weights/lora.safetensors", weight_name="pytorch_lora_weights.safetensors")
+    
+    # upscale = StableDiffusionLatentUpscalePipeline.from_pretrained(
+    #     "stabilityai/sd-x2-latent-upscaler",
+    #     torch_dtype=torch.float16
+    # ).to("cuda")
 
-    refine = AutoPipelineForImage2Image.from_pretrained(
-        "stabilityai/stable-diffusion-xl-refiner-1.0",
-        torch_dtype=torch.float16
-    ).to("cuda")
+    # refine = AutoPipelineForImage2Image.from_pretrained(
+    #     "stabilityai/stable-diffusion-xl-refiner-1.0",
+    #     torch_dtype=torch.float16
+    # ).to("cuda")
 
     # Memory attention
     # text2image.enable_xformers_memory_efficient_attention()
@@ -77,14 +81,12 @@ def load_models():
     return (
         text2image,
         inpaintScribble,
-        inpaintOpenpose,
-        upscale,
-        refine
+        inpaintOpenpose
     )
 
 class Predict(Resource):
     def post(self):
-        (text2image, inpaintScribble, inpaintOpenpose, upscale, refine) = load_models()
+        (text2image, inpaintScribble, inpaintOpenpose) = load_models()
 
         req = request.json
         layers=req.get("layers")
@@ -119,20 +121,22 @@ class Predict(Resource):
                     controlnet_conditioning_scale=0.75
                 ).images[0]
         
-        upscaled = upscale(
-            prompt=full_prompt,
-            image=img,
-            num_inference_steps=20,
-            guidance_scale=6.0
-        ).images[0]
+        # upscaled = upscale(
+        #     prompt=full_prompt,
+        #     image=img,
+        #     num_inference_steps=20,
+        #     guidance_scale=6.0
+        # ).images[0]
 
-        refined = refine(
-            prompt=full_prompt,
-            image=upscaled,
-            num_inference_steps=50,
-            guidance_scale=6.0,
-            strength=0.25,
-        ).images[0]
+        # refined = refine(
+        #     prompt=full_prompt,
+        #     image=upscaled,
+        #     num_inference_steps=50,
+        #     guidance_scale=6.0,
+        #     strength=0.25,
+        # ).images[0]
+                
+        refined = img
         
         with BytesIO() as image_binary:
             refined.save(image_binary, "png")
