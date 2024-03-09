@@ -4,7 +4,7 @@ import requests
 from PIL import Image
 from io import BytesIO
 import base64
-from diffusers import StableDiffusionPipeline, StableDiffusionControlNetInpaintPipeline, StableDiffusionLatentUpscalePipeline, AutoPipelineForImage2Image, ControlNetModel
+from diffusers import StableDiffusionXLPipeline, StableDiffusionControlNetInpaintPipeline, StableDiffusionLatentUpscalePipeline, AutoPipelineForImage2Image, ControlNetModel
 import torch
 
 def saveBytescale (data):
@@ -40,8 +40,8 @@ def load_models():
     )
 
     # Pipelines
-    text2image = StableDiffusionPipeline.from_pretrained(
-        "runwayml/stable-diffusion-v1-5",
+    text2image = StableDiffusionXLPipeline.from_pretrained(
+        "stabilityai/stable-diffusion-xl-base-1.0",
         torch_dtype=torch.float16
     ).to("cuda")
 
@@ -57,7 +57,8 @@ def load_models():
         torch_dtype=torch.float16
     ).to("cuda")
 
-    text2image.unet.load_attn_procs("weights/lora.safetensors")
+    text2image.load_lora_weights("blink7630/storyboard-sketch")
+
     # inpaintScribble.load_lora_weights(".", weight_name="weights/lora.safetensors")
     # inpaintOpenpose.load_lora_weights(".", weight_name="weights/lora.safetensors")
     
@@ -101,6 +102,8 @@ class Predict(Resource):
             if layer["type"] == "background":
                 img = text2image(
                     prompt=prompt,
+                    width=512,
+                    height=512,
                     num_inference_steps=50
                 ).images[0]
             elif layer["type"] == "figure":
