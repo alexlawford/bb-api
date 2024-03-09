@@ -23,7 +23,7 @@ def generateImage (prompt):
 class Predict(Resource):
     def post(self):
         req = request.json
-        prediction = generateImage(req.prompt)
+        prediction = generateImage(req.get('prompt'))
         with BytesIO() as image_binary:
             prediction.save(image_binary, "png")
             image_binary.seek(0)
