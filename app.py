@@ -96,11 +96,12 @@ class Predict(Resource):
         for layer in layers:
             prompt = layer["prompt"]
             full_prompt = full_prompt + ' ' + prompt
+            prompt = prompt + ", Comistyle"
 
             if layer["type"] == "background":
                 img = text2image(
                     prompt=prompt,
-                    num_inference_steps=20
+                    num_inference_steps=50
                 ).images[0]
             elif layer["type"] == "figure":
                 img = inpaintOpenpose(
@@ -108,7 +109,7 @@ class Predict(Resource):
                     image=img,
                     mask_image=decode_base64_image(layer["mask"]),
                     control_image=decode_base64_image(layer["control"]),
-                    num_inference_steps=20,
+                    num_inference_steps=50,
                     controlnet_conditioning_scale=0.75
                 ).images[0]
             else:
@@ -117,7 +118,7 @@ class Predict(Resource):
                     image=img,
                     mask_image=decode_base64_image(layer["mask"]),
                     control_image=decode_base64_image(layer["control"]),
-                    num_inference_steps=20,
+                    num_inference_steps=50,
                     controlnet_conditioning_scale=0.75
                 ).images[0]
         
