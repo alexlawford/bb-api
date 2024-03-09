@@ -26,8 +26,7 @@ def decode_base64_image(image_string):
     buffer = BytesIO(base64_image)
     image = Image.open(buffer)
     rgb = image.convert('RGB')
-    final = rgb.resize((1024,1024))
-    return final
+    return rgb
 
 def load_models():
 
@@ -74,6 +73,8 @@ class Predict(Resource):
             num_inference_steps=30
         ).images[0]
         
+        background = background.resize((512,512))
+
         refined = inpainting(
             prompt="an explorer in a jungle",
             image=background,
