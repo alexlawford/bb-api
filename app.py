@@ -1,4 +1,4 @@
-cfrom flask import Flask, jsonify, request
+from flask import Flask, request
 from flask_restful import Resource, Api
 import requests
 from PIL import Image
