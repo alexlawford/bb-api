@@ -4,7 +4,7 @@ import requests
 from PIL import Image
 from io import BytesIO
 import base64
-from diffusers import StableDiffusionXLPipeline, StableDiffusionControlNetInpaintPipeline, StableDiffusionLatentUpscalePipeline, AutoPipelineForImage2Image, ControlNetModel
+from diffusers import StableDiffusionXLPipeline,
 import torch
 
 def saveBytescale (data):
@@ -28,121 +28,25 @@ def decode_base64_image(image_string):
 def load_models():
     torch.backends.cuda.matmul.allow_tf32 = True
 
-    # Control Nets
-    scribble = ControlNetModel.from_pretrained(
-        "lllyasviel/sd-controlnet-scribble",
-        torch_dtype=torch.float16
-    )
-
-    openpose = ControlNetModel.from_pretrained(
-        "lllyasviel/sd-controlnet-openpose",
-        torch_dtype=torch.float16
-    )
-
     # Pipelines
     text2image = StableDiffusionXLPipeline.from_pretrained(
-        "stabilityai/stable-diffusion-xl-base-1.0",
-        torch_dtype=torch.float16
+        "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
+        torch_dtype=torch.float16,
+        variant="fp16"
     ).to("cuda")
 
-    inpaintScribble = StableDiffusionControlNetInpaintPipeline.from_pretrained(
-        "runwayml/stable-diffusion-inpainting",
-        controlnet=scribble,
-        torch_dtype=torch.float16
-    ).to("cuda")
-
-    inpaintOpenpose = StableDiffusionControlNetInpaintPipeline.from_pretrained(
-        "runwayml/stable-diffusion-inpainting",
-        controlnet=openpose,
-        torch_dtype=torch.float16
-    ).to("cuda")
-
-    text2image.load_lora_weights("blink7630/storyboard-sketch")
-
-    # inpaintScribble.load_lora_weights(".", weight_name="weights/lora.safetensors")
-    # inpaintOpenpose.load_lora_weights(".", weight_name="weights/lora.safetensors")
-    
-    # upscale = StableDiffusionLatentUpscalePipeline.from_pretrained(
-    #     "stabilityai/sd-x2-latent-upscaler",
-    #     torch_dtype=torch.float16
-    # ).to("cuda")
-
-    # refine = AutoPipelineForImage2Image.from_pretrained(
-    #     "stabilityai/stable-diffusion-xl-refiner-1.0",
-    #     torch_dtype=torch.float16
-    # ).to("cuda")
-
-    # Memory attention
-    # text2image.enable_xformers_memory_efficient_attention()
-    # inpaintScribble.enable_xformers_memory_efficient_attention()
-    # inpaintOpenpose.enable_xformers_memory_efficient_attention()
-    # upscale.enable_xformers_memory_efficient_attention()
-    # refine.enable_xformers_memory_efficient_attention()
-
-    return (
-        text2image,
-        inpaintScribble,
-        inpaintOpenpose
-    )
+    return text2image
 
 class Predict(Resource):
     def post(self):
-        (text2image, inpaintScribble, inpaintOpenpose) = load_models()
 
-        req = request.json
-        layers=req.get("layers")
-        full_prompt = ""
-        img = Image.new(mode="RGB", size=(512,512))
-        
-        for layer in layers:
-            prompt = layer["prompt"]
-            full_prompt = full_prompt + ' ' + prompt
-            prompt=prompt + ", storyboard sketch"
+        text2image = load_models()
 
-            if layer["type"] == "background":
-                img = text2image(
-                    prompt=prompt,
-                    width=512,
-                    height=512,
-                    cross_attention_kwargs={"scale": 0.75},
-                    num_inference_steps=50
+        refined = text2image(
+                    prompt="A jungle",
+                    num_inference_steps=30
                 ).images[0]
-            elif layer["type"] == "figure":
-                img = inpaintOpenpose(
-                    prompt=prompt,
-                    image=img,
-                    mask_image=decode_base64_image(layer["mask"]),
-                    control_image=decode_base64_image(layer["control"]),
-                    num_inference_steps=50,
-                    controlnet_conditioning_scale=0.75
-                ).images[0]
-            else:
-                img = inpaintScribble(
-                    prompt=prompt,
-                    image=img,
-                    mask_image=decode_base64_image(layer["mask"]),
-                    control_image=decode_base64_image(layer["control"]),
-                    num_inference_steps=50,
-                    controlnet_conditioning_scale=0.75
-                ).images[0]
-        
-        # upscaled = upscale(
-        #     prompt=full_prompt,
-        #     image=img,
-        #     num_inference_steps=20,
-        #     guidance_scale=6.0
-        # ).images[0]
-
-        # refined = refine(
-        #     prompt=full_prompt,
-        #     image=upscaled,
-        #     num_inference_steps=50,
-        #     guidance_scale=6.0,
-        #     strength=0.25,
-        # ).images[0]
-                
-        refined = img
-        
+  
         with BytesIO() as image_binary:
             refined.save(image_binary, "png")
             image_binary.seek(0)
