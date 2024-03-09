@@ -4,7 +4,7 @@ import requests
 from PIL import Image
 from io import BytesIO
 import base64
-from diffusers import StableDiffusionXLPipeline
+from diffusers import AutoPipelineForText2Image, AutoPipelineForInpainting
 import torch
 import os
 
@@ -30,27 +30,48 @@ def decode_base64_image(image_string):
 
 def load_models():
     # Pipelines
-    text2image = StableDiffusionXLPipeline.from_pretrained(
+    text2image = AutoPipelineForText2Image.from_pretrained(
         "stabilityai/stable-diffusion-xl-base-1.0",
         torch_dtype=torch.float16,
         use_safetensors=True,
-        local_files_only=True
+   #    local_files_only=True
+    ).to("cuda")
+
+    inpainting = AutoPipelineForInpainting.from_pretrained(
+        "stabilityai/stable-diffusion-xl-refiner-1.0",
+        torch_dtype=torch.float16,
+        use_safetensors=True,
+ #      local_files_only=True
     ).to("cuda")
 
     text2image.enable_xformers_memory_efficient_attention()
+    inpainting.enable_xformers_memory_efficient_attention()
 
-    return text2image
+    return (text2image, inpainting)
 
 class Predict(Resource):
     def post(self):
 
-        text2image = load_models()
+        req = request.json
+        layers=req.get("layers")
 
-        refined = text2image(
-                prompt="A jungle",
-                num_inference_steps=30
-            ).images[0]
-  
+        (text2image, inpainting) = load_models()
+
+        background = text2image(
+            prompt="A jungle",
+            width=512,
+            height=512,
+            num_inference_steps=30,
+            output_type="latent"
+        ).images[0]
+        
+        refined = inpainting(
+            prompt="a bear in the jungle",
+            image=background,
+            mask_image=decode_base64_image(layers[1]["mask"]),
+            strength=0.99
+        ).images[0]
+
         with BytesIO() as image_binary:
             refined.save(image_binary, "png")
             image_binary.seek(0)
