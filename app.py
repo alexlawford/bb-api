@@ -104,6 +104,7 @@ class Predict(Resource):
                     prompt=prompt,
                     width=512,
                     height=512,
+                    cross_attention_kwargs={"scale": 0.75},
                     num_inference_steps=50
                 ).images[0]
             elif layer["type"] == "figure":
