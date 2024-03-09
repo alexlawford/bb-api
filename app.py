@@ -4,7 +4,7 @@ import requests
 from PIL import Image
 from io import BytesIO
 import base64
-from diffusers import AutoPipelineForText2Image, StableDiffusionXLImg2ImgControlNetPipeline, ControlNetModel
+from diffusers import AutoPipelineForText2Image, StableDiffusionXLControlNetInpaintPipeline, ControlNetModel
 import torch
 import os
 
@@ -47,7 +47,7 @@ def load_models():
    #    local_files_only=True
     ).to("cuda")
 
-    inpainting = StableDiffusionXLImg2ImgControlNetPipeline.from_pretrained(
+    inpainting = StableDiffusionXLControlNetInpaintPipeline.from_pretrained(
         "stabilityai/stable-diffusion-xl-refiner-1.0",
         torch_dtype=torch.float16,
         use_safetensors=True,
@@ -79,6 +79,7 @@ class Predict(Resource):
             num_inference_steps=30,
             mask_image=decode_base64_image(layers[1]["mask"]),
             control_image=decode_base64_image(layers[1]["control"]),
+            controlnet_conditioning_scale=0.75,
             strength=0.99
         ).images[0]
 
