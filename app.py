@@ -48,7 +48,7 @@ def load_models():
     ).to("cuda")
 
     inpainting = StableDiffusionXLControlNetInpaintPipeline.from_pretrained(
-        "stabilityai/stable-diffusion-xl-refiner-1.0",
+        "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
         torch_dtype=torch.float16,
         use_safetensors=True,
         controlnet=openpose,
