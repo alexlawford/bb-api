@@ -75,18 +75,18 @@ class Predict(Resource):
         
         background = background.resize((512,512))
 
-        refined = inpainting(
-            prompt="an explorer in a jungle",
-            image=background,
-            num_inference_steps=30,
-            mask_image=decode_base64_image(layers[1]["mask"]),
-            control_image=decode_base64_image(layers[1]["control"]),
-            controlnet_conditioning_scale=0.75,
-            strength=0.99
-        ).images[0]
+        # refined = inpainting(
+        #     prompt="an explorer in a jungle",
+        #     image=background,
+        #     num_inference_steps=30,
+        #     mask_image=decode_base64_image(layers[1]["mask"]),
+        #     control_image=decode_base64_image(layers[1]["control"]),
+        #     controlnet_conditioning_scale=0.75,
+        #     strength=0.99
+        # ).images[0]
 
         with BytesIO() as image_binary:
-            refined.save(image_binary, "png")
+            background.save(image_binary, "png")
             image_binary.seek(0)
             result = saveBytescale(image_binary)
 
