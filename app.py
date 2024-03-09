@@ -58,8 +58,8 @@ def load_models():
     ).to("cuda")
 
     text2image.load_lora_weights("weights/lora.safetensors", weight_name="pytorch_lora_weights.safetensors")
-    inpaintScribble.load_lora_weights("weights/lora.safetensors", weight_name="pytorch_lora_weights.safetensors")
-    inpaintOpenpose.load_lora_weights("weights/lora.safetensors", weight_name="pytorch_lora_weights.safetensors")
+    # inpaintScribble.load_lora_weights("weights/lora.safetensors", weight_name="pytorch_lora_weights.safetensors")
+    # inpaintOpenpose.load_lora_weights("weights/lora.safetensors", weight_name="pytorch_lora_weights.safetensors")
     
     # upscale = StableDiffusionLatentUpscalePipeline.from_pretrained(
     #     "stabilityai/sd-x2-latent-upscaler",
@@ -96,11 +96,10 @@ class Predict(Resource):
         for layer in layers:
             prompt = layer["prompt"]
             full_prompt = full_prompt + ' ' + prompt
-            prompt = prompt + ", Comistyle"
 
             if layer["type"] == "background":
                 img = text2image(
-                    prompt=prompt,
+                    prompt=prompt + ", Comistyle",
                     num_inference_steps=50
                 ).images[0]
             elif layer["type"] == "figure":
