@@ -4,7 +4,7 @@ import requests
 from PIL import Image
 from io import BytesIO
 import base64
-from diffusers import StableDiffusionXLPipeline,
+from diffusers import StableDiffusionXLPipeline
 import torch
 
 def saveBytescale (data):
