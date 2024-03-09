@@ -86,9 +86,9 @@ def load_models():
 
 class Predict(Resource):
     def post(self):
-      #  (text2image, inpaintScribble, inpaintOpenpose, upscale, refine) = load_models()
+        # (text2image, inpaintScribble, inpaintOpenpose, upscale, refine) = load_models()
 
-        refine = load_models()
+        # refine = load_models()
 
         req = request.json
         layers=req.get("layers")
@@ -131,21 +131,24 @@ class Predict(Resource):
         # ).images[0]
 
         upscaled = decode_base64_image(layers[1]["control"])
-        full_prompt = "openpose pose"
 
-        refined = refine(
-            prompt=full_prompt,
-            image=upscaled,
-            num_inference_steps=50,
-            guidance_scale=6.0,
-            strength=0.25,
-        ).images[0]
+        print(layers[1]["control"][0:50])
+
+        # full_prompt = "openpose pose"
+
+        # refined = refine(
+        #     prompt=full_prompt,
+        #     image=upscaled,
+        #     num_inference_steps=50,
+        #     guidance_scale=6.0,
+        #     strength=0.25,
+        # ).images[0]
         
-        with BytesIO() as image_binary:
-            refined.save(image_binary, "png")
-            image_binary.seek(0)
-            result = saveBytescale(image_binary)
-        return result.json()
+        # with BytesIO() as image_binary:
+        #     refined.save(image_binary, "png")
+        #     image_binary.seek(0)
+        #     result = saveBytescale(image_binary)
+        # return result.json()
 
 api.add_resource(Predict, "/")
 
