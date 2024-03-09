@@ -61,13 +61,13 @@ class Predict(Resource):
             prompt="A jungle",
             width=512,
             height=512,
-            num_inference_steps=30,
-            output_type="latent"
+            num_inference_steps=30
         ).images[0]
         
         refined = inpainting(
             prompt="a bear in the jungle",
             image=background,
+            num_inference_steps=30,
             mask_image=decode_base64_image(layers[1]["mask"]),
             strength=0.99
         ).images[0]
