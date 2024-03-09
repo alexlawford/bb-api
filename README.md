@@ -1,5 +1,6 @@
 Choose the ubuntu/cuda template on vast.ai
 Edit template and in “docker options” add “-p 8081:8081”
+128gb storage
 Set up & star the instance
 Follow the instructions for ssh’ing into the the instance
 Type uname -a to confirm OS details (expecting Ubuntu)
@@ -24,7 +25,7 @@ git config --global credential.helper store
 
 git clone https://github.com/alexlawford/bb-api.git
 
-python3 -m venv env (follow instructions)
+python3 -m venv env
 
 source env/bin/activate
 

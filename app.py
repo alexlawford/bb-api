@@ -7,7 +7,7 @@ from diffusers import DiffusionPipeline
 
 def saveBytescale (data):
     headers = {
-        'Authorization': 'Bearer *****',
+        'Authorization': 'Bearer public_12a1yrrGGApHW4eVGAfq3RnXk9uv',
         'Content-Type': 'image/png',
     }
     return requests.post('https://api.bytescale.com/v2/accounts/12a1yrr/uploads/binary', headers=headers, data=data)
@@ -15,14 +15,15 @@ def saveBytescale (data):
 app = Flask(__name__)
 api = Api(app)
 
-def generateImage ():
+def generateImage (prompt):
     pipeline = DiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5", use_safetensors=True)
     pipeline.to("cuda")
-    return pipeline("An image of a squirrel in Picasso style").images[0]
+    return pipeline(prompt).images[0]
 
 class Predict(Resource):
     def get(self):
-        prediction = generateImage()
+        req = request.json
+        prediction = generateImage(req.prompt)
         with BytesIO() as image_binary:
             prediction.save(image_binary, "png")
             image_binary.seek(0)
