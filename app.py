@@ -37,7 +37,7 @@ def load_models():
         variant="fp16"
     ).to("cuda")
 
-    text2image.enable_xformers_memory_efficient_attention()
+   # text2image.enable_xformers_memory_efficient_attention()
     text2image.unet = torch.compile(text2image.unet, mode="reduce-overhead", fullgraph=True)
 
     return text2image
