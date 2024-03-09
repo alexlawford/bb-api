@@ -57,7 +57,7 @@ def load_models():
         torch_dtype=torch.float16
     ).to("cuda")
 
-    text2image.load_lora_weights("weights/lora.safetensors", weight_name="pytorch_lora_weights.safetensors")
+    text2image.load_lora_weights("weights", weight_name="lora.safetensors")
     # inpaintScribble.load_lora_weights("weights/lora.safetensors", weight_name="pytorch_lora_weights.safetensors")
     # inpaintOpenpose.load_lora_weights("weights/lora.safetensors", weight_name="pytorch_lora_weights.safetensors")
     
