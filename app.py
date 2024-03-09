@@ -73,9 +73,15 @@ class Predict(Resource):
         ).images[0]
 
         with BytesIO() as image_binary:
+            background.save(image_binary, "png")
+            image_binary.seek(0)
+            result = saveBytescale(image_binary)
+
+        with BytesIO() as image_binary:
             refined.save(image_binary, "png")
             image_binary.seek(0)
             result = saveBytescale(image_binary)
+
         return result.json()
 
 api.add_resource(Predict, "/")
