@@ -1,9 +1,8 @@
-blinker
-click
-Flask
+flask
 gunicorn
-itsdangerous
-Jinja2
-MarkupSafe
-Werkzeug
 flask_restful
+diffusers
+accelerate
+transformers
+pillow
+requests
