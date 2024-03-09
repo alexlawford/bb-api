@@ -96,11 +96,9 @@ class Predict(Resource):
         full_prompt = ""
         img = Image.new(mode="RGB", size=(512,512))
         
-        for layer in layers:
-            prompt = layer["prompt"]
-            full_prompt = full_prompt + ' ' + prompt
-
-            print(full_prompt)
+        # for layer in layers:
+        #     prompt = layer["prompt"]
+        #     full_prompt = full_prompt + ' ' + prompt
 
             # if layer["type"] == "background":
             #     img = text2image(
@@ -133,6 +131,14 @@ class Predict(Resource):
             num_inference_steps=20
         ).images[0]
 
+        img = inpaintOpenpose(
+            prompt=full_prompt,
+            image=img,
+            mask_image=decode_base64_image(layers[1]["mask"]),
+            control_image=decode_base64_image(layers[1]["control"]),
+            num_inference_steps=20,
+            controlnet_conditioning_scale=0.75          
+        )
         # / TEMP
         
         upscaled = upscale(
