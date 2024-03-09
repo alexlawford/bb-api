@@ -30,7 +30,7 @@ def load_models():
 
     # Pipelines
     text2image = StableDiffusionXLPipeline.from_pretrained(
-        "diffusers/stable-diffusion-xl-1.0-inpainting-0.1",
+        "stabilityai/stable-diffusion-xl-base-1.0",
         torch_dtype=torch.float16,
         variant="fp16"
     ).to("cuda")
@@ -43,9 +43,9 @@ class Predict(Resource):
         text2image = load_models()
 
         refined = text2image(
-                    prompt="A jungle",
-                    num_inference_steps=30
-                ).images[0]
+                prompt="A jungle",
+                num_inference_steps=30
+            ).images[0]
   
         with BytesIO() as image_binary:
             refined.save(image_binary, "png")
