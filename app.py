@@ -26,7 +26,8 @@ def decode_base64_image(image_string):
     buffer = BytesIO(base64_image)
     image = Image.open(buffer)
     rgb = image.convert('RGB')
-    return rgb
+    final = rgb.resize((1024,1024))
+    return final
 
 def load_models():
 
