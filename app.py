@@ -28,39 +28,39 @@ def decode_base64_image(image_string):
 def load_models():
     torch.backends.cuda.matmul.allow_tf32 = True
 
-    # # Control Nets
-    # scribble = ControlNetModel.from_pretrained(
-    #     "lllyasviel/sd-controlnet-scribble",
-    #     torch_dtype=torch.float16
-    # )
+    # Control Nets
+    scribble = ControlNetModel.from_pretrained(
+        "lllyasviel/sd-controlnet-scribble",
+        torch_dtype=torch.float16
+    )
 
-    # openpose = ControlNetModel.from_pretrained(
-    #     "lllyasviel/sd-controlnet-openpose",
-    #     torch_dtype=torch.float16
-    # )
+    openpose = ControlNetModel.from_pretrained(
+        "lllyasviel/sd-controlnet-openpose",
+        torch_dtype=torch.float16
+    )
 
-    # # Pipelines
-    # text2image = StableDiffusionPipeline.from_pretrained(
-    #     "runwayml/stable-diffusion-v1-5",
-    #     torch_dtype=torch.float16
-    # ).to("cuda")
+    # Pipelines
+    text2image = StableDiffusionPipeline.from_pretrained(
+        "runwayml/stable-diffusion-v1-5",
+        torch_dtype=torch.float16
+    ).to("cuda")
 
-    # inpaintScribble = StableDiffusionControlNetInpaintPipeline.from_pretrained(
-    #     "runwayml/stable-diffusion-inpainting",
-    #     controlnet=scribble,
-    #     torch_dtype=torch.float16
-    # ).to("cuda")
+    inpaintScribble = StableDiffusionControlNetInpaintPipeline.from_pretrained(
+        "runwayml/stable-diffusion-inpainting",
+        controlnet=scribble,
+        torch_dtype=torch.float16
+    ).to("cuda")
 
-    # inpaintOpenpose = StableDiffusionControlNetInpaintPipeline.from_pretrained(
-    #     "runwayml/stable-diffusion-inpainting",
-    #     controlnet=openpose,
-    #     torch_dtype=torch.float16
-    # ).to("cuda")
+    inpaintOpenpose = StableDiffusionControlNetInpaintPipeline.from_pretrained(
+        "runwayml/stable-diffusion-inpainting",
+        controlnet=openpose,
+        torch_dtype=torch.float16
+    ).to("cuda")
 
-    # upscale = StableDiffusionLatentUpscalePipeline.from_pretrained(
-    #     "stabilityai/sd-x2-latent-upscaler",
-    #     torch_dtype=torch.float16
-    # ).to("cuda")
+    upscale = StableDiffusionLatentUpscalePipeline.from_pretrained(
+        "stabilityai/sd-x2-latent-upscaler",
+        torch_dtype=torch.float16
+    ).to("cuda")
 
     refine = AutoPipelineForImage2Image.from_pretrained(
         "stabilityai/stable-diffusion-xl-refiner-1.0",
@@ -74,81 +74,71 @@ def load_models():
     # upscale.enable_xformers_memory_efficient_attention()
     # refine.enable_xformers_memory_efficient_attention()
 
-    # return (
-    #     text2image,
-    #     inpaintScribble,
-    #     inpaintOpenpose,
-    #     upscale,
-    #     refine
-    # )
-    return refine
-
+    return (
+        text2image,
+        inpaintScribble,
+        inpaintOpenpose,
+        upscale,
+        refine
+    )
 
 class Predict(Resource):
     def post(self):
-        # (text2image, inpaintScribble, inpaintOpenpose, upscale, refine) = load_models()
-
-        # refine = load_models()
+        (text2image, inpaintScribble, inpaintOpenpose, upscale, refine) = load_models()
 
         req = request.json
         layers=req.get("layers")
         full_prompt = ""
         img = Image.new(mode="RGB", size=(512,512))
         
-        # for layer in layers:
-        #     prompt = layer["prompt"]
-        #     full_prompt = full_prompt + ' ' + prompt
+        for layer in layers:
+            prompt = layer["prompt"]
+            full_prompt = full_prompt + ' ' + prompt
 
-        #     if layer["type"] == "background":
-        #         img = text2image(
-        #             prompt=prompt,
-        #             num_inference_steps=20
-        #         ).images[0]
-        #     elif layer["type"] == "figure":
-        #         img = inpaintOpenpose(
-        #             prompt=prompt,
-        #             image=img,
-        #             mask_image=decode_base64_image(layer["mask"]),
-        #             control_image=decode_base64_image(layer["control"]),
-        #             num_inference_steps=20,
-        #             controlnet_conditioning_scale=0.75
-        #         ).images[0]
-        #     else:
-        #         img = inpaintScribble(
-        #             prompt=prompt,
-        #             image=img,
-        #             mask_image=decode_base64_image(layer["mask"]),
-        #             control_image=decode_base64_image(layer["control"]),
-        #             num_inference_steps=20,
-        #             controlnet_conditioning_scale=0.75
-        #         ).images[0]
+            if layer["type"] == "background":
+                img = text2image(
+                    prompt=prompt,
+                    num_inference_steps=20
+                ).images[0]
+            elif layer["type"] == "figure":
+                img = inpaintOpenpose(
+                    prompt=prompt,
+                    image=img,
+                    mask_image=decode_base64_image(layer["mask"]),
+                    control_image=decode_base64_image(layer["control"]),
+                    num_inference_steps=20,
+                    controlnet_conditioning_scale=0.75
+                ).images[0]
+            else:
+                img = inpaintScribble(
+                    prompt=prompt,
+                    image=img,
+                    mask_image=decode_base64_image(layer["mask"]),
+                    control_image=decode_base64_image(layer["control"]),
+                    num_inference_steps=20,
+                    controlnet_conditioning_scale=0.75
+                ).images[0]
         
-        # upscaled = upscale(
-        #     prompt=full_prompt,
-        #     image=img,
-        #     num_inference_steps=20,
-        #     guidance_scale=6.0
-        # ).images[0]
+        upscaled = upscale(
+            prompt=full_prompt,
+            image=img,
+            num_inference_steps=20,
+            guidance_scale=6.0
+        ).images[0]
 
-        upscaled = decode_base64_image(layers[1]["control"])
-
-        print(layers[1]["control"][0:50])
-
-        # full_prompt = "openpose pose"
-
-        # refined = refine(
-        #     prompt=full_prompt,
-        #     image=upscaled,
-        #     num_inference_steps=50,
-        #     guidance_scale=6.0,
-        #     strength=0.25,
-        # ).images[0]
+        refined = refine(
+            prompt=full_prompt,
+            image=upscaled,
+            num_inference_steps=50,
+            guidance_scale=6.0,
+            strength=0.25,
+        ).images[0]
         
-        # with BytesIO() as image_binary:
-        #     refined.save(image_binary, "png")
-        #     image_binary.seek(0)
-        #     result = saveBytescale(image_binary)
-        # return result.json()
+        with BytesIO() as image_binary:
+            refined.save(image_binary, "png")
+            image_binary.seek(0)
+            result = saveBytescale(image_binary)
+        return result.json()
 
 api.add_resource(Predict, "/")
 
