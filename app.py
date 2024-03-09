@@ -42,34 +42,29 @@ def load_models():
     # Pipelines
     text2image = StableDiffusionPipeline.from_pretrained(
         "runwayml/stable-diffusion-v1-5",
-        torch_dtype=torch.float16,
-        safety_checker = None
+        torch_dtype=torch.float16
     ).to("cuda")
 
     inpaintScribble = StableDiffusionControlNetInpaintPipeline.from_pretrained(
         "runwayml/stable-diffusion-inpainting",
         controlnet=scribble,
-        torch_dtype=torch.float16,
-        safety_checker = None
+        torch_dtype=torch.float16
     ).to("cuda")
 
     inpaintOpenpose = StableDiffusionControlNetInpaintPipeline.from_pretrained(
         "runwayml/stable-diffusion-inpainting",
         controlnet=openpose,
-        torch_dtype=torch.float16,
-        safety_checker = None
+        torch_dtype=torch.float16
     ).to("cuda")
 
     upscale = StableDiffusionLatentUpscalePipeline.from_pretrained(
         "stabilityai/sd-x2-latent-upscaler",
-        torch_dtype=torch.float16,
-        safety_checker = None
+        torch_dtype=torch.float16
     ).to("cuda")
 
     refine = AutoPipelineForImage2Image.from_pretrained(
         "stabilityai/stable-diffusion-xl-refiner-1.0",
-        torch_dtype=torch.float16,
-        safety_checker = None
+        torch_dtype=torch.float16
     ).to("cuda")
 
     # Memory attention
@@ -101,11 +96,17 @@ class Predict(Resource):
             full_prompt = full_prompt + ' ' + prompt
 
             if layer["type"] == "background":
+                # DEBUG
+                print("rendering background with prompt " + prompt)
+
                 img = text2image(
                     prompt=prompt,
                     num_inference_steps=20
                 ).images[0]
             elif layer["type"] == "figure":
+                # DEBUG
+                print("rendering a figure with prompt " + prompt)
+
                 img = inpaintOpenpose(
                     prompt=prompt,
                     image=img,
@@ -115,6 +116,9 @@ class Predict(Resource):
                     controlnet_conditioning_scale=0.75
                 ).images[0]
             else:
+                # DEBUG
+                print("rendering a scribble with prompt " + prompt)
+
                 img = inpaintScribble(
                     prompt=prompt,
                     image=img,
